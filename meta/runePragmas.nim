@@ -71,10 +71,14 @@ type
     user, llm, thirdParty, trusted
 
   MetaRisk* = enum
-    `low`, `medium`, `high`
+    rkLow, rkMedium, rkHigh
 
-  MetaSpeed* {.pure.} = enum
-    fast, medium, long, `data-dependent`
+  MetaSpeed* = enum
+    ## Prefixed, and deliberately not `{.pure.}`. The template these came
+    ## from was pure AND shared the name `medium` with MetaRisk, so
+    ## `speed: medium` resolved to the risk value and `speed: fast` needed
+    ## qualifying -- which is why no repository here ever used `speed`.
+    spFast, spMedium, spLong, spDataDependent
 
   MetaIssue* = tuple
     name: string ## short description or name
