@@ -48,6 +48,65 @@
 ## what forced this file to be copied and edited per repository. Otter reads
 ## every tag string instead and reports the ones that look like typos.
 ##
+## ╭⟢ saying how much of something there will be
+##
+## A type says what one of them looks like. It never says how many there
+## are, and that second number is the one that decides whether a program
+## fits in memory:
+##
+##     one object of 400 bytes        400 bytes      <- nobody cares
+##     5000 objects of 400 bytes      2 megabytes    <- now we care
+##
+## Nothing in the source text can work that out, because it depends on
+## how the program is used. The person writing the type knows it, so
+## they write it down:
+##
+##     type
+##       AppState* {.role: truthState,
+##         expectedCount: 1, lifeCycle: lcForever.} = object
+##         ## one of these, alive from start to finish
+##
+##       Frame* {.role: preparedData,
+##         expectedCount: [0, 5000], lifeCycle: 100.} = object
+##         ## up to five thousand at once, each alive about 100ms
+##
+## `expectedCount` is either an exact number or a `[fewest, most]` pair.
+## `lifeCycle` is either one of the `MetaLife` words above, or a plain
+## number meaning milliseconds.
+##
+## The reading contract, so a tool does not have to guess: after
+## `lifeCycle:` a digit or a minus sign means milliseconds, and a letter
+## means one of the `MetaLife` words. In `expectedCount`, `-1` as the
+## second number means there is no ceiling by design.
+##
+##     what is written              how it reads
+##     ---------------------------  --------------------------------
+##     expectedCount: 1             exactly one
+##     expectedCount: [0, 5000]     none to five thousand
+##     expectedCount: [1, -1]       at least one, no ceiling
+##     lifeCycle: lcForever         never freed
+##     lifeCycle: 100               about a tenth of a second
+##
+## Both are estimates and are meant to be. They are written to be read
+## together - a count with no lifetime cannot tell churn from weight,
+## and a lifetime with no count cannot tell a busy program from an idle
+## one. Write both or write neither.
+##
+## Why these two take anything at all, where the others take a type.
+## `expectedCount` and `lifeCycle` are ONE template each, with an
+## `untyped` parameter, rather than one per shape. An overloaded pragma
+## is two symbols with one name, and Nim's own `hasCustomPragma` and
+## `getCustomPragmaVal` refuse an overloaded name:
+##
+##     ambiguous identifier: 'expectedCount' -- you need a helper proc
+##
+## Keeping it to one symbol means a repository can read its own
+## declarations back while it builds, and multiply each by `sizeof(T)`,
+## which is exact. A tool reading the source as text can only estimate
+## that. The cost is the same one the tags pay: a value nobody checks,
+## so `lifeCycle: lcFrever` compiles and is caught on reading, not on
+## writing.
+##
 ## ╭⟢ why `tag` and not `tags`
 ##
 ## `tags` is taken. Nim's own effect-tracking pragma owns that name and wants
@@ -115,6 +174,23 @@ type
     ##   stDone        finished, said explicitly
     stStubbed, stPartial, stDeprecated, stDone
 
+  MetaLife* = enum
+    ## How long ONE of something stays in memory. Written on a type, not
+    ## on a routine, and paired with `expectedCount` - the two together
+    ## are what turns "this object exists" into "this object costs".
+    ##
+    ##   lcForever   made once at start-up, freed when the program exits
+    ##   lcSession   as long as a connection, a login, an open file
+    ##   lcJob       one request, one frame, one message
+    ##   lcScratch   made and dropped inside one routine
+    ##
+    ## The ladder runs from longest to shortest, and each step down means
+    ## the same memory is handed back and taken again more often. A pool
+    ## is written as `lcForever` with the pool's size as the count: the
+    ## objects in it are reused rather than freed, so the memory never
+    ## goes back even though each one is borrowed for a moment.
+    lcForever, lcSession, lcJob, lcScratch
+
 template input*(x: MetaInput) {.pragma.}
 template input*(x: set[MetaInput]) {.pragma.}
 template role*(x: MetaRole) {.pragma.}
@@ -133,3 +209,6 @@ template covers*(x: string) {.pragma.}
 template covers*(x: seq[string]) {.pragma.}
 template pins*(x: MetaIssue) {.pragma.}
 template pins*(x: MetaIssues) {.pragma.}
+
+template expectedCount*(x: untyped) {.pragma.}
+template lifeCycle*(x: untyped) {.pragma.}
