@@ -1,6 +1,6 @@
 # Progress
 
-Commit Message: Let a type say how many of it there will be, and for how long
+Commit Message: Say which Otter findings this repository will always have
 
 Features (Planned):
 - A reader on the Otter side: multiply each declared count by the type's
@@ -24,6 +24,11 @@ Features (In Progress):
 - None.
 
 Notes:
+- Otter reports 18 routines here with no role and all 18 untested.
+  Those are the pragma templates themselves: a file that defines the
+  annotations cannot wear them, and a pragma template is applied rather
+  than called. Both readings are correct and neither is a defect. The
+  README says so too, so nobody fixes it twice.
 - Last big change: the two new pragmas are ONE template each taking
   `untyped`, not one per shape like `tag` and `role` are.
 - Why, and it was found by trying the obvious thing first: an overloaded

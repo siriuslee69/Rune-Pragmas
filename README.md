@@ -228,3 +228,17 @@ a type:
 ```
 
 The singular is free, and it is also the key the reading tools already split.
+
+╭⟢ what Otter says about this repository, and why ⌜guide⌟
+
+Measuring this repository reports **18 routines that declare no role**.
+That is every pragma template in `meta/runePragmas.nim`, and it is
+expected: this is the file that *defines* the annotations, so it cannot
+wear them. `role` cannot be hung on `role`.
+
+It also reports all 18 as untested. They are applied as pragmas rather
+than called, and the tests in `evaluation/tests/` apply every one of
+them — which is the only way a pragma template *can* be exercised.
+
+Both findings are correct readings of a file that is a special case.
+Nothing to fix.
