@@ -1,6 +1,6 @@
 # Progress
 
-Commit Message: Say which Otter findings this repository will always have
+Commit Message: Stop tracking compiled test and example programs
 
 Features (Planned):
 - A reader on the Otter side: multiply each declared count by the type's

@@ -24,3 +24,9 @@ bin/
 nimble.develop
 nimble.paths
 nimbledeps
+
+# Compiled test and example programs, by shape rather than by name.
+evaluation/tests/test_*
+!evaluation/tests/test_*.nim
+examples/*/src/*
+!examples/*/src/*.*
