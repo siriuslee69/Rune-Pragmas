@@ -193,8 +193,13 @@ type
 
 template input*(x: MetaInput) {.pragma.}
 template input*(x: set[MetaInput]) {.pragma.}
-template role*(x: MetaRole) {.pragma.}
-template role*(x: set[MetaRole]) {.pragma.}
+template role*(x: untyped) {.pragma.}
+  ## ONE untyped template, not a MetaRole overload: a typed argument is
+  ## looked up before the pragma is chosen, so `math` found the module
+  ## std/math first wherever it was imported ("invalid pragma: role: math").
+  ## `{.role: math.}`, `{.role: {parser, sanitizer}.}` and
+  ## `role({MetaRole.math})` all still work; a misspelled role compiles and
+  ## is caught by Otter, which reads the names.
 template risk*(x: MetaRisk) {.pragma.}
 template speed*(x: MetaSpeed) {.pragma.}
 template issues*(x: MetaIssues) {.pragma.}

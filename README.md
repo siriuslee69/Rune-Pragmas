@@ -151,8 +151,8 @@ idle one. Write both or write neither.
 
 ╭⟢ why these two are readable and the others are not 🍣
 
-Every other pragma here is overloaded: `tag` takes a string *or* a
-list, `role` takes one value *or* a set. An overloaded pragma is two
+Most other pragmas here are overloaded: `tag` takes a string *or* a
+list, `input` one value *or* a set. An overloaded pragma is two
 symbols sharing a name, and Nim's own readers refuse that:
 
 ```text
@@ -179,6 +179,33 @@ form buys.
 The cost is the same one the tags pay: nothing checks the value, so
 `lifeCycle: lcFrever` compiles and is caught when something reads it,
 not when somebody writes it. ʚ♡ɞ・the same trade, for the same reason.
+
+╭⟢ why `role` takes its name untyped ⚘
+
+`role` used to be two typed templates (one `MetaRole`, or a set). A typed
+argument is looked up **before** the pragma is chosen, so in any file that
+also said `import std/math` the word `math` found the module first:
+
+```text
+  import std/math
+  proc mean(A: openArray[float]): float {.role: math.} =   # used to fail:
+  Error: invalid pragma: role: math                         # `math` = the module
+```
+
+Now `role` is one `untyped` template, like `expectedCount`. The name is not
+looked up at all, so all of these work, with or without std/math:
+
+```nim
+proc a() {.role: math.} = discard
+proc b() {.role: {parser, sanitizer}.} = discard
+proc c() {.role({MetaRole.math}).} = discard      # the old workaround still works
+```
+
+The trade is the usual one: `{.role: parsr.}` compiles too. Otter reads the
+role names out of the source and reports one it does not know. Reading a
+role back while building works (`p.getCustomPragmaVal(role) == {helper}`),
+except for `math` next to std/math - there the read-back types the word
+again.
 
 ╭⟢ why the tags are strings 🍣
 

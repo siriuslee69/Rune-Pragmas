@@ -9,7 +9,7 @@
 # it, which may be months later and in another repository. So both are
 # checked here.
 
-import std/[macros, strutils, unittest]
+import std/[macros, math, strutils, unittest]   # math: role `math` must win over the module (see the role test)
 
 import runePragmas
 
@@ -106,3 +106,13 @@ suite "rune pragmas":
     check weightOf(most, one) >= 2_000_000
     check weightOf(AppState.getCustomPragmaVal(expectedCount),
       sizeof(AppState)) == sizeof(AppState)
+
+  # {.testKind: tkRegression, pins: "invalid pragma: role: math next to import std/math".}
+  test "role: math compiles next to std/math, and a role can be read back":
+    ## This file imports std/math, and weightOf above says {.role: math.}:
+    ## that it compiled at all is the first half of the test.
+    check weightOf.hasCustomPragma(role)
+    ## Reading `math` back would type the word `math` again, where it means
+    ## the module once more - tools read role names from the source text.
+    check trimMetaInput.getCustomPragmaVal(role) == {helper}
+    check sqrt(16.0) == 4.0          # std/math itself still works here
