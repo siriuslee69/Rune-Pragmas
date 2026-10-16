@@ -217,3 +217,19 @@ template pins*(x: MetaIssues) {.pragma.}
 
 template expectedCount*(x: untyped) {.pragma.}
 template lifeCycle*(x: untyped) {.pragma.}
+
+template secret*(x: string) {.pragma.}
+  ## Names the parameters that hold secret data, split by `|`:
+  ##
+  ##     proc constantTimeEqual(a, b: openArray[byte]): bool {.
+  ##         secret: "a|b".} =
+  ##
+  ## It changes nothing in the build. `otter_repo_graph ct` reads it and
+  ## then checks the machine code of the routine for three leaks:
+  ##
+  ##   a jump that depends on a secret         (time differs)
+  ##   a memory address made from a secret     (cache differs)
+  ##   a division of a secret                  (time differs)
+  ##
+  ## For an openArray only the bytes it points at are secret; its length
+  ## is public.
