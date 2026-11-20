@@ -30,3 +30,12 @@ evaluation/tests/test_*
 !evaluation/tests/test_*.nim
 examples/*/src/*
 !examples/*/src/*.*
+
+# migration top-up 2026-11-20
+build/
+builds/
+nimcache*/
+*.exe
+*.trash
+.otter/
+.local/
